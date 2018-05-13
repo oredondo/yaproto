@@ -34,7 +34,7 @@
 #  include <sys/socket.h>
 #  include <unistd.h>
 #  include <sys/time.h>
-#  include <select.h>
+#  include <sys/select.h>
 
 #endif
 
@@ -757,5 +757,7 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1joinGroup
 		   &joinRequest, sizeof(joinRequest));
       /*<0 -> perror("setsockopt(IPV6_JOIN_GROUP) failed");*/
   } 
+  else /* Not reached */
+    return -1;
 }
 
