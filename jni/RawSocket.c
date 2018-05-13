@@ -34,6 +34,7 @@
 #  include <sys/socket.h>
 #  include <unistd.h>
 #  include <sys/time.h>
+#  include <select.h>
 
 #endif
 
@@ -700,3 +701,61 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1getReceiveTimeout
 {
   return gettimeout(socket, SO_RCVTIMEO);
 }
+
+/*
+ * Class:     com_savarese_rocksaw_net_RawSocket
+ * Method:    __joinGroup
+ * Signature: (II[B)I
+ *     Added by javierrledesma,2018
+ */
+JNIEXPORT jint JNICALL
+Java_com_savarese_rocksaw_net_RawSocket__1_1joinGroup
+(JNIEnv *env, jclass cls, jint socket, jint family, jbyteArray mcastaddress, jbyteArray address)
+{
+  union {
+    struct sockaddr_in sin;
+    struct sockaddr_in6 sin6;
+  } sin, mcastsin;
+  struct sockaddr *saddr, *mcastsaddr;
+  socklen_t socklen, mcastsocklen;
+
+  if (family == PF_INET) {
+    socklen = sizeof(sin.sin);
+    saddr = init_sockaddr_in(env, &sin.sin, address);
+    mcastsocklen = sizeof(mcastsin.sin);
+    mcastsaddr = init_sockaddr_in(env, &mcastsin.sin, mcastaddress);
+  } else if (family == PF_INET6) {
+    socklen = sizeof(sin.sin6);
+    saddr = init_sockaddr_in6(env, &sin.sin6, address);
+    mcastsocklen = sizeof(mcastsin.sin6);
+    mcastsaddr = init_sockaddr_in6(env, &mcastsin.sin6, mcastaddress);
+  } else {
+    errno = EINVAL;
+    return errno;
+  }
+    
+  if (family == PF_INET) {
+    /* join the multicast "group" */
+    struct ip_mreq joinRequest;
+    joinRequest.imr_multiaddr = ((struct sockaddr_in *)mcastsaddr)->sin_addr;
+    joinRequest.imr_interface = ((struct sockaddr_in *)saddr)->sin_addr;  /* 0 o INADDR_ANY: Let the system choose the i/f */    
+	/*printf("Joining IPv4 multicast group...\n");*/
+    return setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+		   &joinRequest, sizeof(joinRequest));
+      /*<0 -> perror("setsockopt(IPV4_ADD_MEMBERSHIP) failed");*/
+  } 
+  else if (family == PF_INET6) {
+    /* join the multicast "group" (address) */
+    struct ipv6_mreq joinRequest;
+    memcpy(&joinRequest.ipv6mr_multiaddr, &((struct sockaddr_in6 *)
+	   mcastsaddr)->sin6_addr,  sizeof(struct in6_addr));
+    memcpy(&joinRequest.ipv6mr_interface, &((struct sockaddr_in6 *)
+	   saddr)->sin6_addr,  sizeof(struct in6_addr));
+    /* joinRequest.ipv6mr_interface = 0;   Let system choose the i/f */
+    /*puts("Joining IPv6 multicast group...");*/
+    return setsockopt(socket, IPPROTO_IPV6, IPV6_JOIN_GROUP,
+		   &joinRequest, sizeof(joinRequest));
+      /*<0 -> perror("setsockopt(IPV6_JOIN_GROUP) failed");*/
+  } 
+}
+

@@ -127,6 +127,11 @@ JNIEXPORT jint JNICALL
 Java_com_savarese_rocksaw_net_RawSocket__1_1getReceiveTimeout
 (JNIEnv *, jclass, jint);
 
+/* Added for multicast */
+JNIEXPORT jint JNICALL
+Java_com_savarese_rocksaw_net_RawSocket__1_1joinGroup
+(JNIEnv *, jclass, jint, jint, jbyteArray, jbyteArray);
+
 #ifdef __cplusplus
 }
 #endif

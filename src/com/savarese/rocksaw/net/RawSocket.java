@@ -14,6 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * The original rocksow library has been modified to support multicast.
+*/
 
 package com.savarese.rocksaw.net;
 
@@ -38,6 +41,7 @@ import java.net.SocketException;
  * <p><em>Important!  On most operating systems, you must have root
  * access or administrative privileges to use raw sockets.</em></p>
  */
+
 public class RawSocket {
 
   protected native static int __PF_INET();
@@ -145,8 +149,7 @@ public class RawSocket {
     else
       setUseSelectTimeout(false);
   }
-
-
+  
   /**
    * Tests if the socket has been opened.
    *
@@ -717,4 +720,23 @@ public class RawSocket {
     return write(address, data, 0, data.length);
   }
 
+  /* 
+   * Added multicast support to rawsocket library
+   * may-2018
+   */
+  private native static int __joinGroup(int socket, int family, byte[] mcastaddr, byte[] address);
+
+  /** 
+   * Joins a multicast group 
+   * @param mcastAddr The multicast group to join to.
+   * @param interfaceAddr The interface address (0: let the system choose)
+   * @throws SocketException
+   */
+  public  void joinGroup(InetAddress mcastAddr, InetAddress interfaceAddr) throws SocketException{
+	  int result = __joinGroup(__socket, __family, mcastAddr.getAddress(), interfaceAddr.getAddress());
+
+	  if(result < 0)
+		  __throwSocketException();
+
+  }
 }
