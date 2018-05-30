@@ -25,7 +25,7 @@ LDFLAGS  =
 CPPFLAGS =
 LIBNAME  = librocksaw
 LIBEXTENSION = so
-JDK_HOME = /usr/lib/jvm/java-6-sun-1.6.0.26
+#JDK_HOME = /usr/lib/jvm/java-6-sun-1.6.0.26
 
 ifeq ($(DARWIN),Darwin)
   JAVA_INCDIR  = $(JAVA_HOME)/include
@@ -35,8 +35,8 @@ ifeq ($(DARWIN),Darwin)
   SHARED =
 else
   ifeq ($(CYGWIN),CYGWIN)
-    override CC += -mno-cygwin
-    CPPFLAGS += -D__int64="long long"
+#    override CC += -mno-cygwin
+    CPPFLAGS += -D__int64="long long" -D_WIN32
     LDFLAGS += -Wl,--kill-at -l$(WINSOCK)
     JDK_HOME := $(shell cygpath $(JDK_HOME))
     LIBNAME      = rocksaw
@@ -44,12 +44,13 @@ else
   endif
 
   JAVA_INCDIR      = $(JDK_HOME)/include
-  JAVA_INCDIR_PLAF = $(dir $(wildcard $(JAVA_INCDIR)/*/jni_md.h))
-  CPPFLAGS += -I$(JAVA_INCDIR) -I$(JAVA_INCDIR_PLAF)
+#  JAVA_INCDIR_PLAF = $(dir $(wildcard $(JAVA_INCDIR)/*/jni_md.h))
+  JAVA_INCDIR_PLAF  = $(JAVA_INCDIR)/win32
+  CPPFLAGS += -I"$(JAVA_INCDIR)" -I"$(JAVA_INCDIR_PLAF)"
   CFLAGS += -ansi -pthread -fpic
 endif
 
-SRC := $(shell find . -name "*.c" -print)
+SRC := $(shell /usr/bin/find . -name "*.c" -print)
 OBJ := $(SRC:%.c=%.o)
 
 CLEAN_EXTENSIONS = o $(LIBEXTENSION)
@@ -59,6 +60,7 @@ LIBROCKSAW = $(LIBNAME).$(LIBEXTENSION)
 all: $(LIBROCKSAW)
 
 %.o: %.c
+	echo $(JDK_HOME)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(LIBROCKSAW): $(OBJ)
@@ -66,9 +68,9 @@ $(LIBROCKSAW): $(OBJ)
 
 clean:
 	for extension in $(CLEAN_EXTENSIONS); do \
-		find . -name "*.$$extension" | xargs rm -f ; \
+		/usr/bin/find . -name "*.$$extension" | xargs rm -f ; \
 	done
-	find . -name "*~" | xargs rm -f
+	/usr/bin/find . -name "*~" | xargs rm -f
 
 LIBDIR = ../lib
 install: all

@@ -513,6 +513,87 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom2
 
 /*
  * Class:     com_savarese_rocksaw_net_RawSocket
+ * Method:    __recvfrom
+ * Signature: (I[BIII[B[B)I
+ */
+JNIEXPORT jint JNICALL
+Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
+(JNIEnv *env, jclass cls, jint socket,
+ jbyteArray data, jint offset, jint len, jint family, jbyteArray address, jbyteArray toAddress)
+{
+  int result;
+  jbyte *buf;
+  union {
+    struct sockaddr_in sin;
+    struct sockaddr_in6 sin6;
+  } sin, din;
+  struct sockaddr *saddr, *daddr;
+  void *addr, *toAddr;
+  socklen_t socklen;
+  size_t addrlen;
+  
+  unsigned short iphdrlen;
+  struct iphdr *ip; 
+  
+  if(family == PF_INET) {
+    socklen = sizeof(sin.sin);
+    addrlen = sizeof(sin.sin.sin_addr);
+    memset(&sin, 0, sizeof(struct sockaddr_in));
+    sin.sin.sin_family = PF_INET;
+    saddr = (struct sockaddr *)&sin.sin;
+    addr = &sin.sin.sin_addr;
+    
+    memset(&din, 0, sizeof(struct sockaddr_in));
+	din.sin.sin_family = PF_INET;
+    daddr = (struct sockaddr *)&din.sin;
+    toAddr = &din.sin.sin_addr;
+ 
+  } else if(family == PF_INET6) {
+    socklen = sizeof(sin.sin6);
+    addrlen = sizeof(sin.sin6.sin6_addr);
+    memset(&sin.sin6, 0, sizeof(struct sockaddr_in6));
+    sin.sin6.sin6_family = PF_INET6;
+    addr = &sin.sin6.sin6_addr;
+    saddr = (struct sockaddr *)&sin.sin6;
+
+    memset(&din.sin6, 0, sizeof(struct sockaddr_in6));
+    din.sin6.sin6_family = PF_INET6;
+    toAddr = &din.sin6.sin6_addr;
+    daddr = (struct sockaddr *)&din.sin6;
+  } else {
+    errno = EINVAL;
+    return errno;
+  }
+
+  buf = (*env)->GetByteArrayElements(env, data, NULL);
+
+  result = recvfrom(socket, buf+offset, len, 0, saddr, &socklen);
+
+  (*env)->ReleaseByteArrayElements(env, data, buf, 0);
+
+/*  memset(&source, 0, sizeof(source));
+  source.sin_addr.s_addr = ip->saddr; */
+  memset(&dest, 0, sizeof(dest));
+  din.sin.sin_addr.s_addr = ip->daddr;
+
+  buf = (*env)->GetByteArrayElements(env, address, NULL);
+  memcpy(buf, addr, addrlen);
+  (*env)->ReleaseByteArrayElements(env, address, buf, 0);
+
+  buf = (*env)->GetByteArrayElements(env, toAddress, NULL);
+  memcpy(buf, toAddr, addrlen);
+  (*env)->ReleaseByteArrayElements(env, toAddress, buf, 0);
+
+#if defined(_WIN32)
+  if(result < 0)
+    errno = WSAGetLastError();
+#endif
+
+  return result;
+}
+
+/*
+ * Class:     com_savarese_rocksaw_net_RawSocket
  * Method:    __sendto
  * Signature: (I[BIII[B)I
  */

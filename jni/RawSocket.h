@@ -80,6 +80,10 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom2
 (JNIEnv *, jclass, jint, jbyteArray, jint, jint, jint, jbyteArray);
 
 JNIEXPORT jint JNICALL
+Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
+(JNIEnv *, jclass, jint, jbyteArray, jint, jint, jint, jbyteArray, jbyteArray);
+
+JNIEXPORT jint JNICALL
 Java_com_savarese_rocksaw_net_RawSocket__1_1sendto
 (JNIEnv *, jclass, jint, jbyteArray, jint, jint, jint, jbyteArray);
 

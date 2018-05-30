@@ -590,6 +590,9 @@ public class RawSocket {
   protected native static int __recvfrom2(int socket, byte[] data, int offset,
                                         int length, int family,
                                         byte[] address);
+  protected native static int __recvfrom3(int socket, byte[] data, int offset,
+          int length, int family,
+          byte[] address, byte[] dstAddress);
 
   /**
    * Reads packet data from the socket.  IPv4 ({@link #PF_INET})
@@ -605,13 +608,17 @@ public class RawSocket {
    * of the received packet.  It may be null if you don't want to
    * retrieve the source address.  Otherwise, it must be the right
    * size to store the address (e.g., 4 bytes for an IPv4 address).
+   * @param toAddress A byte array in which to store the destination
+   * address of the received packet. It may be null if you don¡t want to
+   * retrieve the source address. Otherwise, it must be the right size
+   * to store the address (e.g., 4 bytes for an IPv4 address).
    * @exception IllegalArgumentException If the offset or lengths are
    * invalid or if the address parameter is the wrong length.
    * @exception IOException If an I/O error occurs.
    * @exception InterruptedIOException If the read operation times out.
    * @return The number of bytes read.
    */
-  public int read(byte[] data, int offset, int length, byte[] address)
+  public int read(byte[] data, int offset, int length, byte[] address, byte[] toAddress)
     throws IllegalArgumentException, IOException, InterruptedIOException
   {
     if(offset < 0 || length < 0 || length > data.length - offset)
@@ -644,11 +651,18 @@ public class RawSocket {
     return result;
   }
 
+  public int read(byte[] data, int offset, int length, byte[] address) 
+		  throws IllegalArgumentException, IOException, InterruptedIOException
+  {
+	    return read(data, offset, length, address, null);
+
+  }
+
   /** Same as {@code read(data, 0, length, null);} */
   public int read(byte[] data, int offset, int length)
     throws IllegalArgumentException, IOException, InterruptedIOException
   {
-    return read(data, offset, length, null);
+    return read(data, offset, length, null, null);
   }
 
   /** Same as {@code read(data, 0, data.length, address);} */
