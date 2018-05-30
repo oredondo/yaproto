@@ -627,7 +627,12 @@ public class RawSocket {
     if(address != null &&
        ((__family == PF_INET && address.length != 4) ||
         (__family == PF_INET6 && address.length != 16)))
-      throw new IllegalArgumentException("Invalid address length.");
+      throw new IllegalArgumentException("Invalid source address length.");
+
+    if(toAddress != null &&
+    	       ((__family == PF_INET && toAddress.length != 4) ||
+    	        (__family == PF_INET6 && toAddress.length != 16)))
+    	      throw new IllegalArgumentException("Invalid destination address length.");
 
     int result = 0;
 
@@ -639,7 +644,9 @@ public class RawSocket {
       result =
         (address == null ?
          __recvfrom1(__socket, data, offset, length, __family) :
-         __recvfrom2(__socket, data, offset, length, __family, address));
+         (toAddress == null ? 
+        		 __recvfrom2(__socket, data, offset, length, __family, address) :
+        	     __recvfrom3(__socket, data, offset, length, __family, address, toAddress)));
 
     if(result < 0) {
       if(__isErrorEAGAIN())
