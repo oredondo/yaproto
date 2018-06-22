@@ -16,6 +16,7 @@
 UNAME  := $(shell uname)
 CYGWIN := $(findstring CYGWIN,$(UNAME))
 DARWIN := $(findstring Darwin,$(UNAME))
+FREEBSD := $(findstring FreeBSD,$(UNAME))
 
 CC       = gcc
 SHARED   = -shared
@@ -25,7 +26,7 @@ LDFLAGS  =
 CPPFLAGS =
 LIBNAME  = librocksaw
 LIBEXTENSION = so
-#JDK_HOME = /usr/lib/jvm/java-6-sun-1.6.0.26
+JDK_HOME = /usr/lib/jvm/java-6-sun-1.6.0.26
 
 ifeq ($(DARWIN),Darwin)
   JAVA_INCDIR  = $(JAVA_HOME)/include
@@ -35,22 +36,28 @@ ifeq ($(DARWIN),Darwin)
   SHARED =
 else
   ifeq ($(CYGWIN),CYGWIN)
-#    override CC += -mno-cygwin
-    CPPFLAGS += -D__int64="long long" -D_WIN32
+    override CC += -mno-cygwin
+    CPPFLAGS += -D__int64="long long"
     LDFLAGS += -Wl,--kill-at -l$(WINSOCK)
     JDK_HOME := $(shell cygpath $(JDK_HOME))
     LIBNAME      = rocksaw
     LIBEXTENSION = dll
-  endif
+  else
+   ifeq ($(FREEBSD),FreeBSD)
+    CC = clang
+    JDK_HOME = /usr/local/openjdk7
+   endif
+endif
 
   JAVA_INCDIR      = $(JDK_HOME)/include
-#  JAVA_INCDIR_PLAF = $(dir $(wildcard $(JAVA_INCDIR)/*/jni_md.h))
-  JAVA_INCDIR_PLAF  = $(JAVA_INCDIR)/win32
-  CPPFLAGS += -I"$(JAVA_INCDIR)" -I"$(JAVA_INCDIR_PLAF)"
+  JAVA_INCDIR_PLAF = $(dir $(wildcard $(JAVA_INCDIR)/*/jni_md.h))
+  CPPFLAGS += -I$(JAVA_INCDIR) -I$(JAVA_INCDIR_PLAF)
   CFLAGS += -ansi -pthread -fpic
 endif
 
-SRC := $(shell /usr/bin/find . -name "*.c" -print)
+#SRC := $(shell find . -name "*.c" -print)
+
+SRC := $(shell find . -name "RawSocket.c" -print)
 OBJ := $(SRC:%.c=%.o)
 
 CLEAN_EXTENSIONS = o $(LIBEXTENSION)
@@ -60,7 +67,6 @@ LIBROCKSAW = $(LIBNAME).$(LIBEXTENSION)
 all: $(LIBROCKSAW)
 
 %.o: %.c
-	echo $(JDK_HOME)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(LIBROCKSAW): $(OBJ)
@@ -68,9 +74,9 @@ $(LIBROCKSAW): $(OBJ)
 
 clean:
 	for extension in $(CLEAN_EXTENSIONS); do \
-		/usr/bin/find . -name "*.$$extension" | xargs rm -f ; \
+		find . -name "*.$$extension" | xargs rm -f ; \
 	done
-	/usr/bin/find . -name "*~" | xargs rm -f
+	find . -name "*~" | xargs rm -f
 
 LIBDIR = ../lib
 install: all

@@ -519,7 +519,7 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom2
 JNIEXPORT jint JNICALL
 Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
 (JNIEnv *env, jclass cls, jint socket,
- jbyteArray data, jint offset, jint len, jint family, jbyteArray address, jbyteArray toAddress)
+ jbyteArray data, jint offset, jint len, jint family, jbyteArray address, jbyteArray toaddress)
 {
   int result;
   jbyte *buf;
@@ -527,14 +527,14 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
   } sin, din;
-  struct sockaddr *saddr, *daddr;
-  void *addr, *toAddr;
+  struct sockaddr *saddr, *tosaddr;
+  void *addr, *toaddr;
   socklen_t socklen;
   size_t addrlen;
   
-  unsigned short iphdrlen;
+/*  unsigned short iphdrlen;
   struct iphdr *ip; 
-  
+ */ 
   if(family == PF_INET) {
     socklen = sizeof(sin.sin);
     addrlen = sizeof(sin.sin.sin_addr);
@@ -545,8 +545,8 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
     
     memset(&din, 0, sizeof(struct sockaddr_in));
 	din.sin.sin_family = PF_INET;
-    daddr = (struct sockaddr *)&din.sin;
-    toAddr = &din.sin.sin_addr;
+    tosaddr = (struct sockaddr *)&din.sin;
+    toaddr = &din.sin.sin_addr;
  
   } else if(family == PF_INET6) {
     socklen = sizeof(sin.sin6);
@@ -558,8 +558,8 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
 
     memset(&din.sin6, 0, sizeof(struct sockaddr_in6));
     din.sin6.sin6_family = PF_INET6;
-    toAddr = &din.sin6.sin6_addr;
-    daddr = (struct sockaddr *)&din.sin6;
+    toaddr = &din.sin6.sin6_addr;
+    tosaddr = (struct sockaddr *)&din.sin6;
   } else {
     errno = EINVAL;
     return errno;
@@ -573,16 +573,16 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1recvfrom3
 
 /*  memset(&source, 0, sizeof(source));
   source.sin_addr.s_addr = ip->saddr; */
-  memset(&dest, 0, sizeof(dest));
-  din.sin.sin_addr.s_addr = ip->daddr;
+/*  memset(&dest, 0, sizeof(dest));
+  din.sin.sin_addr.s_addr = ip->tosaddr; */
 
   buf = (*env)->GetByteArrayElements(env, address, NULL);
   memcpy(buf, addr, addrlen);
   (*env)->ReleaseByteArrayElements(env, address, buf, 0);
 
-  buf = (*env)->GetByteArrayElements(env, toAddress, NULL);
-  memcpy(buf, toAddr, addrlen);
-  (*env)->ReleaseByteArrayElements(env, toAddress, buf, 0);
+  buf = (*env)->GetByteArrayElements(env, toaddress, NULL);
+  memcpy(buf, toaddr, addrlen);
+  (*env)->ReleaseByteArrayElements(env, toaddress, buf, 0);
 
 #if defined(_WIN32)
   if(result < 0)
