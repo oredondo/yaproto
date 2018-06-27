@@ -20,7 +20,7 @@ FREEBSD := $(findstring FreeBSD,$(UNAME))
 
 CC       = gcc
 SHARED   = -shared
-CFLAGS   = -Wall -O2 -pipe -D_REENTRANT
+CFLAGS   = -Wall -O2 -pipe -D_REENTRANT -D_GNU_SOURCE
 WINSOCK  = ws2_32
 LDFLAGS  =
 CPPFLAGS =
@@ -55,9 +55,7 @@ endif
   CFLAGS += -ansi -pthread -fpic
 endif
 
-#SRC := $(shell find . -name "*.c" -print)
-
-SRC := $(shell find . -name "RawSocket.c" -print)
+SRC := $(shell find . -name "*.c" -print)
 OBJ := $(SRC:%.c=%.o)
 
 CLEAN_EXTENSIONS = o $(LIBEXTENSION)
