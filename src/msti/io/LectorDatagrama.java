@@ -56,7 +56,7 @@ public class LectorDatagrama extends Lector {
 				// Crea una nueva lectura o TODO: reutiliza a anterior si era lectura parcial
 				if (lecturaAnteriorFinalizada) {
 					lectura = new Lectura();
-				}
+				}	
 
 				// TODO: new y pasar byte[] nuevo, o reutilizar byte[]?
 				bufer = new byte[this.getAceptador().getCadenaFiltros().getFirst().getMaxInputBytes()]; //TODO:aqu� o filtro siguiente?

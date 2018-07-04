@@ -17,7 +17,7 @@ import java.util.Iterator;
 public class AceptadorDatagramaMulticast extends AceptadorDatagrama {
 
 	/** 
-	 * No se usa un CopyOnWriteArrayList porque esta configuraciï¿½n se realiza antes de poner en marcha el aceptador
+	 * No se usa un CopyOnWriteArrayList porque esta configuración se realiza antes de poner en marcha el aceptador
 	 * sin concurrencia.
 	 */
 	protected final ArrayList<InetAddress> grupos;
@@ -36,7 +36,7 @@ public class AceptadorDatagramaMulticast extends AceptadorDatagrama {
 		try {
 			this.socket = new MulticastSocket(address);
 		} catch (IOException e) {
-			// Convierte la excepciï¿½n para compatibilidad con el mï¿½todo del cual deriva
+			// Convierte la excepción para compatibilidad con el método del cual deriva
 			throw new SocketException(e.getMessage());
 		}		
 	}
@@ -52,7 +52,7 @@ public class AceptadorDatagramaMulticast extends AceptadorDatagrama {
 		Iterator<InetAddress> iterador = grupos.iterator();
 		while (iterador.hasNext()) {
 		    if (Arrays.equals(((InetAddress)iterador.next()).getAddress(), grupo.getAddress()))
-		    		iterador.remove();  // ï¿½nica forma segura de borrar mientras se itera :)
+		    		iterador.remove();  // única forma segura de borrar mientras se itera :)
 		}				
 	}
 

@@ -69,18 +69,20 @@ public class LectorRawSocket extends Lector {
 
 				//datagrama = new DatagramPacket(bufer, bufer.length);
 				// Crea dirección para la familia de direcciones del socket: PF_INET, PF_INET6
-				byte[] buferDireccion = new byte[((AceptadorRawSocket)this.getAceptador()).getFamiliaProtocolos() == RawSocket.PF_INET ? 4: 16];
-				int leidos = this.socket.read(bufer, buferDireccion); // espera bloqueante  ���verificar que no he puesto timeout??
-
-				System.out.println("LectorRawSocket:run()---> Recepción #" + numRecv++ + " " + bufer.length + " octetos. Origen:" + direccion.pid);
+				byte[] buferDireccionOrigen = new byte[((AceptadorRawSocket)this.getAceptador()).getFamiliaProtocolos() == RawSocket.PF_INET ? 4: 16];
+				byte[] buferDireccionDestino = new byte[((AceptadorRawSocket)this.getAceptador()).getFamiliaProtocolos() == RawSocket.PF_INET ? 4: 16];
+				//int leidos = this.socket.read(bufer, buferDireccionOrigen); // espera bloqueante  ���verificar que no he puesto timeout??
+				int leidos = this.socket.read(bufer, 0, bufer.length, buferDireccionOrigen, buferDireccionDestino);
+				System.out.println("LectorRawSocket:run()---> Recepción #" + numRecv++ + " " + bufer.length + " octetos. Origen:" + 
+									InetAddress.getByAddress(buferDireccionOrigen) + "Destino:" + InetAddress.getByAddress(buferDireccionDestino));
 
 				// Ajusta tama�o de bufer al l�mite de octetos le�dos
 				
 				// TODO: si no se hace sesi�n nueva en base al origen (en datagrama), la segunda lectura puede
 				// venir de otro origen diferente �generar sesi�n diferente por par origen-destino en datagrama?
 				// Construye una lectura
-				lectura.setDireccionOrigen((SocketAddress)new InetSocketAddress(InetAddress.getByAddress(buferDireccion), 0 /*dummy port*/)); //TODO: puerto dummy para mantener SockAddress
-				//lectura.setDireccionLocal(socket.getLocalSocketAddress());
+				lectura.setDireccionOrigen((SocketAddress)new InetSocketAddress(InetAddress.getByAddress(buferDireccionOrigen), 0 /*dummy port*/)); //TODO: puerto dummy para mantener SockAddress
+				lectura.setDireccionLocal((SocketAddress)new InetSocketAddress(InetAddress.getByAddress(buferDireccionDestino), 0 /*dummy port*/));
 				lectura.setMensaje(bufer);
 				// lectura.setMensajeLength(leidos);  TODO: Pasar offset,length del bufer, si mensaje es un byte[]
 				lectura.setDecodificada(false);

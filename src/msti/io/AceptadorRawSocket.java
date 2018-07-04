@@ -65,6 +65,11 @@ public class AceptadorRawSocket extends Aceptador {
 	
 	public void bind(InetAddress inetAddress) throws IOException {
 //		if (socketAddress instanceof InetSocketAddress)
+		if (socket==null){
+			System.out.println("AceptadorRawSocket.bind: socket es null");
+		}else{
+			System.out.println("AceptadorRawSocket.bind: socket no es null");
+		}
 		socket.bind(inetAddress);
 //		else if (socketAddress instanceof RawSocketAddress) 
 //			socket.bind(((RawSocketAddress)socketAddress).toByteArray());
@@ -88,6 +93,14 @@ public class AceptadorRawSocket extends Aceptador {
 		    		iterador.remove();  // �nica forma segura de borrar mientras se itera :)
 		}
 		*/				
+	}
+	
+	public boolean isMulticast(){
+		return isMulticast;
+	}
+	
+	public ArrayList<InetAddress> getGrupos(){
+		return grupos;
 	}
 	
 	public int getFamiliaProtocolos() { return familiaProtocolos; }

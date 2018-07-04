@@ -14,13 +14,22 @@ public class Inet4Address {
 	 * Convierte una dirección IP a int
 	 */
 	public static int toInt(InetAddress inetAddress) {
+		/*
 		// Obtiene la dirección en byte[]
 		byte[] b = inetAddress.getAddress();
 		int r = 0; // resultado
 
 		for(int i = 0; i < 4; i++) 
 			r += b[i] & ((0xF000) >>> ((3-i) * 8)); //orden de red: b[0] contiene MSB
-		return r;
+		return r;*/
+		
+		int result = 0;
+		for (byte b: inetAddress.getAddress())
+		{
+		    result = result << 8 | (b & 0xFF);
+		}
+		return result;
+		
 	}
 	
 	/**
