@@ -35,7 +35,7 @@ public class FactoriaFSMMaquinaEstadosRIP implements ISesionCreadaListener {
 		System.out.println("FactoriaFSMRIP: sesionCreada()");
 		// Instancia una máquina de estados RIP para cada nueva sesión
 		FSMMaquinaEstadosRIP meRIP = this.getInstance();
-		// Añade sesión para que pueda enviar desde estado Inicio
+		// Anade sesión para que pueda enviar desde estado Inicio
 		meRIP.getContexto().put("SesionRIP",  sesion);
 		
 		// Suscribe la máquina a los eventos de lectura de la sesión para que pueda recibir mensajes

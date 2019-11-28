@@ -96,15 +96,15 @@ public class FSMEstadoRIPRutaNoExiste extends FSMEstadoRIPRuta {
 		if (guarda.equals("D<15")) {
 
 			// TODO: Podría cambiar de clase y construir ya una Ruta, de esta forma en las acciones, fuera de la máquina, nunca se vería un mensaje (formato de la máquina) pero por eficiencia, se reaprovecha.
-			// Lo añade en tabla de rutas  D=D+1 y N
+			// Lo anade en tabla de rutas  D=D+1 y N
 			// mensaje = mensaje.toBuilder().setMetrica(mensaje.getMetrica() + 1).build(); 
 			MensajeRIPRuta mensajeActualizado = ((MensajeRIPRuta.Builder) mensaje.toBuilder())
 					.setMetrica(mensaje.getMetrica() + 1)
 					.build();
 					
-			FSMIdAccionRIPRuta.TABLARUTAS_AÑADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
+			FSMIdAccionRIPRuta.TABLARUTAS_AnADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
 			// Crea entrada en tabla forwarding
-			FSMIdAccionRIPRuta.TABLAFORWARDING_AÑADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
+			FSMIdAccionRIPRuta.TABLAFORWARDING_AnADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
 			// Inicia temporizador expiración ruta
 			FSMIdAccionRIPRuta.REINICIAR_TEMPORIZADOR_RUTAEXPIRADA.getInstance().execute(contexto, mensajeActualizado);
 		}

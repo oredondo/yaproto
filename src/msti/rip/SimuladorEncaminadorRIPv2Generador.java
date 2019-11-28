@@ -37,7 +37,7 @@ public class SimuladorEncaminadorRIPv2Generador implements Runnable, ISesionCrea
 		// TODO Auto-generated method stub
 		System.out.println("Sesión creada: id=" + sesion.getId());
 		((FiltroNotificador)sesion.getAceptador().getCadenaFiltros().getLast()).addLecturaListener(this, sesion.getId());
-		System.out.println("   añadido ILecturaListener");
+		System.out.println("   anadido ILecturaListener");
 
 		synchronized (semaforoSesion) {
 			System.out.println("En monitor sesionCreada: notificando...");

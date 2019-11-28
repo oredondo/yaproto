@@ -41,7 +41,7 @@ public class FiltroFactoria implements IFSMEventoUpdateRutaListener {
 		this.factoriaMaquinaEstadosRuta = factoria;
 	}
 	/**
-	 * Añade un listener de los eventos update de ruta
+	 * Anade un listener de los eventos update de ruta
 	 * @param updateRutaListener listener
 	 * @param direccionRed Se suscribe a los eventos de ruta que tengan esta dirección de red destino
 	 */
@@ -80,7 +80,7 @@ public class FiltroFactoria implements IFSMEventoUpdateRutaListener {
 			System.out.println(this.getClass().getName() + ": notificarEventoUpdateRuta: creada instancia FSMRIPRuta: notificada");
 
 			FSMMaquinaEstadosRIPRuta maquinaEstadosRuta = factoriaMaquinaEstadosRuta.getInstance();
-			// Añade en el contexto la referencia al observable de IUpdateRuta (la m.e, para que
+			// Anade en el contexto la referencia al observable de IUpdateRuta (la m.e, para que
 			//  luego se pueda suscribir
 			maquinaEstadosRuta.getContexto().put("FSMEventoUpdateRutaProductor", this);
 			// Máquina síncrona
@@ -89,10 +89,10 @@ public class FiltroFactoria implements IFSMEventoUpdateRutaListener {
 			maquinaEstadosRuta.init(maquinaEstadosRuta.getContexto());
 			// Notifica el evento hacia esta máquina
 			maquinaEstadosRuta.updateRuta(mensaje); //TODO: falta informar de interfaz de entrada (para split horizon)
-			// TODO: máquina debe ser síncrona, se debe haber almacenado en la tabla de rutas, si ha añadido la ruta
+			// TODO: máquina debe ser síncrona, se debe haber almacenado en la tabla de rutas, si ha anadido la ruta
 			// si la máquina fuera un hilo, habría concurrencia con recolector basura java
 			//suscribir máquina de estados...? o pasar este observable y que se suscriba ella si quiere
-			// pero si no guardamos la referencia, hasta que ella se guarde al añadir la entrada... el 
+			// pero si no guardamos la referencia, hasta que ella se guarde al anadir la entrada... el 
 			// recolector podría eliminarla
 		}
 
