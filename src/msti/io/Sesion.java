@@ -6,7 +6,12 @@ Distributed under the MIT License (license terms are at http://opensource.org/li
 package msti.io;
 
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicLong;
+
+import msti.ospfv2.ConfiguracionOSPFv2;
 
 public class Sesion {
 	
@@ -110,14 +115,18 @@ public class Sesion {
 	/**
 	 * Escribe un mensaje saliente
 	 * @param mensaje
+	 * @throws UnknownHostException 
 	 */
-	public void escribir(Escritura escritura) {
+	public void escribir(Escritura escritura){
+
 		// Configura el mensaje como original
 		escritura.setMensajeOriginal(escritura.getMensaje());
 		// mensaje no codificado
 		escritura.estaCodificada = false;
 		// Se lo pasa al Escritor que nos de el aceptador TODO: posible par�metro idSesion al getEscritor() para que seleccione entre varios...
 		this.getAceptador().getEscritor().escribir(this, escritura);
+
+		
 	}
 
 

@@ -39,55 +39,55 @@ public class FSMMaquinaEstadosRIPRuta extends FSMMaquinaEstados implements ITime
 	@Override
 	protected void configurarTransiciones()	{
 		/* Pseudo-estado Inicio */
-		añadirTransicion(FSMIdEstadoRIP.INICIO, 
+		anadirTransicion(FSMIdEstadoRIP.INICIO, 
 				null, null, 
 				FSMIdEstadoRIPRuta.NOEXISTERUTA);
 		/* Estado No existe ruta */
-		añadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
 				FSMIdEventoRIPRuta.TEMPORIZADORRUTAEXPIRADA, null, 
 				FSMIdEstadoRIPRuta.NOEXISTERUTA);
-		añadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
 				FSMIdEventoRIPRuta.TEMPORIZADORRUTAELIMINAR, null, 
 				FSMIdEstadoRIPRuta.NOEXISTERUTA);
-		añadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("D>=15"), 
 				FSMIdEstadoRIPRuta.NOEXISTERUTA);
-		añadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.NOEXISTERUTA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("D<15"), 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);
 		/* Estado Ruta aceptada */
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.TEMPORIZADORRUTAEXPIRADA, null, 
 				FSMIdEstadoRIPRuta.RUTAINVALIDA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.TEMPORIZADORRUTAELIMINAR, null, 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("N!=Nexthop,D+1>=Dist"), 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("N!=Nexthop,D+1<Dist,D<15"), 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("N==Nexthop,D>=15"), 
 				FSMIdEstadoRIPRuta.RUTAINVALIDA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("N==Nexthop,D<15,D+1==Dist"), 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAACEPTADA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("N==Nexthop,D<15,D+1!=Dist"), 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);
 		/* Estado Ruta inválida */
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
 				FSMIdEventoRIPRuta.TEMPORIZADORRUTAEXPIRADA, null, 
 				FSMIdEstadoRIPRuta.RUTAINVALIDA); //No debe ocurrir.
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
 				FSMIdEventoRIPRuta.TEMPORIZADORRUTAELIMINAR, null, 
 				FSMIdEstadoRIPRuta.NOEXISTERUTA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("D>=15"), 
 				FSMIdEstadoRIPRuta.RUTAINVALIDA);
-		añadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
+		anadirTransicion(FSMIdEstadoRIPRuta.RUTAINVALIDA, 
 				FSMIdEventoRIPRuta.ACTUALIZACIONRUTA, new String("D<15"), 
 				FSMIdEstadoRIPRuta.RUTAACEPTADA);  //TODO: Ir a Final y desuscribir/destruir maquina ??
 	}
@@ -97,11 +97,11 @@ public class FSMMaquinaEstadosRIPRuta extends FSMMaquinaEstados implements ITime
 	 * Identificador de las acciones, que funciona a su vez como factoría (en este caso de Singleton)
 	 */
 	public enum FSMIdAccionRIPRuta {
-		TABLARUTAS_AÑADIR_RUTA (FSMAccionAnadirRutaEnTablaRutas.getInstance()),
+		TABLARUTAS_ANADIR_RUTA (FSMAccionAnadirRutaEnTablaRutas.getInstance()),
 		TABLARUTAS_MODIFICAR_RUTA (FSMAccionModificarRutaEnTablaRutas.getInstance()),
 		TABLARUTAS_MODIFICAR_RUTA_ESTABLECER_DISTANCIA_INFINITO (FSMAccionEstablecerDistanciaInfinitoEnTablaRutas.getInstance()),
 		TABLARUTAS_BORRAR_RUTA (FSMAccionBorrarRutaEnTablaRutas.getInstance()),
-		TABLAFORWARDING_AÑADIR_RUTA (FSMAccionAnadirRutaEnTablaForwarding.getInstance()),
+		TABLAFORWARDING_ANADIR_RUTA (FSMAccionAnadirRutaEnTablaForwarding.getInstance()),
 		TABLAFORWARDING_MODIFICAR_RUTA (FSMAccionModificarRutaEnTablaForwarding.getInstance()),
 		TABLAFORWARDING_BORRAR_RUTA (FSMAccionBorrarRutaEnTablaForwarding.getInstance()),
 		REINICIAR_TEMPORIZADOR_RUTAEXPIRADA (FSMAccionReiniciarTemporizadorRutaExpirada.getInstance()),

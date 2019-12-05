@@ -94,7 +94,7 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 		sb.append(idGuarda != null ? idGuarda : idGuarda);
 		return sb.toString();		
 	}
-	public void añadirTransicion(FSMIdEstado idEstadoOrigen, FSMIdEvento idEvento, String idGuarda, FSMIdEstado idEstadoDestino) {
+	public void anadirTransicion(FSMIdEstado idEstadoOrigen, FSMIdEvento idEvento, String idGuarda, FSMIdEstado idEstadoDestino) {
 		mapaTransiciones.put( generarClaveMapaTransiciones(idEstadoOrigen, idEvento, idGuarda), idEstadoDestino);
 	}
 	public void borrarTransicion(FSMIdEstado idEstadoOrigen, FSMIdEvento idEvento, String idGuarda, FSMIdEstado idEstadoDestino) {
@@ -106,7 +106,7 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 	 * EstadoOrigen,Evento,guarda -> EstadoFinal
 	 */
 	protected void configurarTransiciones()	{
-		añadirTransicion(FSMIdEstadoBase.INICIO, null, null, FSMIdEstadoBase.FIN);
+		anadirTransicion(FSMIdEstadoBase.INICIO, null, null, FSMIdEstadoBase.FIN);
 	}
 
 	public FSMContexto getContexto() {

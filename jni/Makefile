@@ -26,7 +26,7 @@ LDFLAGS  =
 CPPFLAGS =
 LIBNAME  = librocksaw
 LIBEXTENSION = so
-JDK_HOME = /usr/lib/jvm/java-6-sun-1.6.0.26
+JDK_HOME = /usr/lib/jvm/java-1.6.0
 
 ifeq ($(DARWIN),Darwin)
   JAVA_INCDIR  = $(JAVA_HOME)/include
@@ -56,6 +56,8 @@ endif
 endif
 
 SRC := $(shell find . -name "*.c" -print)
+
+#SRC := $(shell find . -name "RawSocket.c" -print)
 OBJ := $(SRC:%.c=%.o)
 
 CLEAN_EXTENSIONS = o $(LIBEXTENSION)

@@ -82,22 +82,22 @@ public class FSMMaquinaEstadosNetlinkCliente extends FSMMaquinaEstados implement
 	 * EstadoOrigen,Evento,guarda -> EstadoFinal
 	 */
 	protected void configurarTransiciones()	{
-		añadirTransicion(FSMIdEstadoNetlinkCliente.INICIO, 
+		anadirTransicion(FSMIdEstadoNetlinkCliente.INICIO, 
 				null, null, 
 				FSMIdEstadoNetlinkCliente.PREPARADO);
-		añadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
+		anadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
 				FSMIdEventoNetlinkCliente.ORDEN_BORRAR_RUTA, null, 
 				FSMIdEstadoNetlinkCliente.PREPARADO);
-		añadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
+		anadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
 				FSMIdEventoNetlinkCliente.ORDEN_MODIFICAR_RUTA, null, 
 				FSMIdEstadoNetlinkCliente.PREPARADO);
-		añadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
+		anadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
 				FSMIdEventoNetlinkCliente.RESPUESTA_CONTROL_RECIBIDA, null, 
 				FSMIdEstadoNetlinkCliente.PREPARADO);
-		añadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
+		anadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
 				FSMIdEventoNetlinkCliente.RESPUESTA_NOCONTROL_RECIBIDA, null, 
 				FSMIdEstadoNetlinkCliente.PREPARADO);
-		añadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
+		anadirTransicion(FSMIdEstadoNetlinkCliente.PREPARADO, 
 				FSMIdEventoNetlinkCliente.TEMPORIZADOR_OPSINCRONA, null, 
 				FSMIdEstadoNetlinkCliente.PREPARADO);
 	}
