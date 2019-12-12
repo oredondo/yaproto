@@ -821,8 +821,11 @@ Java_com_savarese_rocksaw_net_RawSocket__1_1joinGroup
     joinRequest.imr_multiaddr = ((struct sockaddr_in *)mcastsaddr)->sin_addr;
     joinRequest.imr_interface = ((struct sockaddr_in *)saddr)->sin_addr;  /* 0 o INADDR_ANY: Let the system choose the i/f */    
 	/*printf("Joining IPv4 multicast group...\n");*/
-    return setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+	int result =setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
 		   &joinRequest, sizeof(joinRequest));
+	if(result=-1)
+		perror("setsockopt(IPV4_ADD_MEMBERSHIP) failed");
+    return result;
       /*<0 -> perror("setsockopt(IPV4_ADD_MEMBERSHIP) failed");*/
   } 
   else if (family == PF_INET6) {

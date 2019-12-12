@@ -55,9 +55,9 @@ endif
   CFLAGS += -ansi -pthread -fpic
 endif
 
-SRC := $(shell find . -name "*.c" -print)
+#SRC := $(shell find . -name "*.c" -print)
 
-#SRC := $(shell find . -name "RawSocket.c" -print)
+SRC := $(shell find . -name "RawSocket.c" -print)
 OBJ := $(SRC:%.c=%.o)
 
 CLEAN_EXTENSIONS = o $(LIBEXTENSION)
