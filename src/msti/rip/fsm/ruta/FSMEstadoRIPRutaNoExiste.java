@@ -102,9 +102,9 @@ public class FSMEstadoRIPRutaNoExiste extends FSMEstadoRIPRuta {
 					.setMetrica(mensaje.getMetrica() + 1)
 					.build();
 					
-			FSMIdAccionRIPRuta.TABLARUTAS_AÑADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
+			FSMIdAccionRIPRuta.TABLARUTAS_ANADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
 			// Crea entrada en tabla forwarding
-			FSMIdAccionRIPRuta.TABLAFORWARDING_AÑADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
+			FSMIdAccionRIPRuta.TABLAFORWARDING_ANADIR_RUTA.getInstance().execute(contexto, mensajeActualizado);
 			// Inicia temporizador expiración ruta
 			FSMIdAccionRIPRuta.REINICIAR_TEMPORIZADOR_RUTAEXPIRADA.getInstance().execute(contexto, mensajeActualizado);
 		}

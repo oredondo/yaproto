@@ -6,9 +6,12 @@ Distributed under the MIT License (license terms are at http://opensource.org/li
 package msti.io;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 import com.savarese.rocksaw.net.RawSocket;
 
+import msti.ospfv2.ConfiguracionOSPFv2;
 import msti.util.RawSocketNetlink;
 import msti.util.RawSocketNetlink.NetlinkAddress;
 
@@ -70,8 +73,42 @@ public class SesionRawSocket extends Sesion {
             throw new IllegalArgumentException("No compatible especificar una direcci�n remota con transporte modo flujo");
         }
 
+        /*
         // Encola la solicitud en el escritor (sin espera a que llegue al canal)
-        this.getEscritor().escribirAsincrono(this, escritura);        
+        this.getEscritor().escribirAsincrono(this, escritura); 
+        */
+        Escritura escritura1 = new Escritura(escritura.getMensaje());
+        Escritura escritura2 = new Escritura(escritura.getMensaje());
+        	
+		try {
+			InetAddress dirDestino = ((InetSocketAddress) escritura.getDireccionDestino()).getAddress();
+			if(dirDestino.equals(ConfiguracionOSPFv2.getInstance().allSPFRouters)){
+				//Enviar mensaje a todos los routers
+				//Escenario1. R1, R2 Y R3
+				
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura); 
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura); 
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.3"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura); 
+				
+				
+			}else if(dirDestino.equals(ConfiguracionOSPFv2.getInstance().allDRouters)){
+				//Enviar mensaje a todos los DR
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura); 
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.3"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura); 
+				
+			}else{
+				//Enviar mensaje únicamente al destinatario
+				this.getEscritor().escribirAsincrono(this, escritura); 
+				
+			}
+		} catch (UnknownHostException e) {
+		}
+        
 	}
 
 

@@ -24,7 +24,9 @@ public class AceptadorRawSocket extends Aceptador {
 	protected int familiaProtocolos = 0;
 	protected int protocolo = 0;
 	private Thread hiloEscritor;
-
+	private InetAddress dirIPAceptador;
+	
+	
 	/** 
 	 * No se usa un CopyOnWriteArrayList porque esta configuraci�n se realiza antes de poner en marcha el aceptador
 	 * sin concurrencia.
@@ -65,7 +67,13 @@ public class AceptadorRawSocket extends Aceptador {
 	
 	public void bind(InetAddress inetAddress) throws IOException {
 //		if (socketAddress instanceof InetSocketAddress)
+		if (socket==null){
+			System.out.println("AceptadorRawSocket.bind: socket es null");
+		}else{
+			System.out.println("AceptadorRawSocket.bind: socket no es null");
+		}
 		socket.bind(inetAddress);
+		this.setDirIPAceptador(inetAddress);
 //		else if (socketAddress instanceof RawSocketAddress) 
 //			socket.bind(((RawSocketAddress)socketAddress).toByteArray());
 	}
@@ -88,6 +96,14 @@ public class AceptadorRawSocket extends Aceptador {
 		    		iterador.remove();  // �nica forma segura de borrar mientras se itera :)
 		}
 		*/				
+	}
+	
+	public boolean isMulticast(){
+		return isMulticast;
+	}
+	
+	public ArrayList<InetAddress> getGrupos(){
+		return grupos;
 	}
 	
 	public int getFamiliaProtocolos() { return familiaProtocolos; }
@@ -140,6 +156,14 @@ public class AceptadorRawSocket extends Aceptador {
 		// No crea hilo aparte para el lector, dado que el aceptadorDatagrama no requiere m�s actividad, 
 		// as� que ejecuta el lector.run() en el hilo actual
 		lector.run();  
+	}
+
+	public InetAddress getDirIPAceptador() {
+		return dirIPAceptador;
+	}
+
+	public void setDirIPAceptador(InetAddress dirIPAceptador) {
+		this.dirIPAceptador = dirIPAceptador;
 	}
 
 }

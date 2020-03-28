@@ -46,6 +46,8 @@ public class RawSocket {
 
   protected native static int __PF_INET();
   protected native static int __PF_INET6();
+  
+    
 
   /**
    * A protocol family constant for {@link #open} indicating IPv4.
@@ -89,6 +91,7 @@ public class RawSocket {
 
     PF_INET  = __PF_INET();
     PF_INET6 = __PF_INET6();
+    
   }
 
   protected static final int __UNDEFINED = -1;
@@ -591,8 +594,8 @@ public class RawSocket {
                                         int length, int family,
                                         byte[] address);
   protected native static int __recvfrom3(int socket, byte[] data, int offset,
-          int length, int family,
-          byte[] address, byte[] dstAddress);
+								        int length, int family,
+								        byte[] address, byte[] dstAddress);
 
   /**
    * Reads packet data from the socket.  IPv4 ({@link #PF_INET})

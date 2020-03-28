@@ -9,7 +9,7 @@ package msti.io;
 import msti.util.HashMappedDoublyLinkedList;
 
 
-public abstract class Aceptador implements Runnable {
+public abstract class Aceptador extends Thread {
 
 	protected SesionConfiguracion sesionConfiguracion;
 
