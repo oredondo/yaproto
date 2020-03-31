@@ -19,7 +19,7 @@ public class SesionRawSocket extends Sesion {
 
 	/**
 	 * Constructor para SesionDatagrama (sesi�n en modo no flujo)
-	 * 
+	 *
 	 * @param aceptador  Aceptador que gener� la sesi�n
 	 * @param sesionConfiguracion  Configuraci�n asociada a la sesi�n
 	 */
@@ -30,10 +30,10 @@ public class SesionRawSocket extends Sesion {
 
 	/** Direcci�n remota de env�o de los pr�ximos mensajes: cuando es flujo no se utiliza */
 	private InetAddress direccionRemota;
-	
+
 	/** Direcci�n local */
 	private InetAddress direccionLocal;
-	
+
 	/** Socket */
 	private RawSocket socket;
 
@@ -68,47 +68,49 @@ public class SesionRawSocket extends Sesion {
 	 * @param direccionRemota. Si no se proporciona (null), se usa la preasignada.
 	 */
 	public void escribir(Escritura escritura) {
-		
+
         if ( this.esModoFlujo && (direccionRemota != null)) {
             throw new IllegalArgumentException("No compatible especificar una direcci�n remota con transporte modo flujo");
         }
 
         /*
         // Encola la solicitud en el escritor (sin espera a que llegue al canal)
-        this.getEscritor().escribirAsincrono(this, escritura); 
+        this.getEscritor().escribirAsincrono(this, escritura);
         */
         Escritura escritura1 = new Escritura(escritura.getMensaje());
         Escritura escritura2 = new Escritura(escritura.getMensaje());
-        	
+
 		try {
 			InetAddress dirDestino = ((InetSocketAddress) escritura.getDireccionDestino()).getAddress();
 			if(dirDestino.equals(ConfiguracionOSPFv2.getInstance().allSPFRouters)){
 				//Enviar mensaje a todos los routers
 				//Escenario1. R1, R2 Y R3
-				
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura); 
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura); 
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.3"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura); 
-				
-				
+
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.1.2"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura);
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.1.253"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura);
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.3.253"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura);
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.3.2"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura);
+
+
 			}else if(dirDestino.equals(ConfiguracionOSPFv2.getInstance().allDRouters)){
 				//Enviar mensaje a todos los DR
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.2"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura); 
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("192.168.1.3"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura); 
-				
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.1.253"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura);
+				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.3.253"), 0));
+				this.getEscritor().escribirAsincrono(this, escritura);
+
 			}else{
 				//Enviar mensaje únicamente al destinatario
-				this.getEscritor().escribirAsincrono(this, escritura); 
-				
+				this.getEscritor().escribirAsincrono(this, escritura);
+
 			}
 		} catch (UnknownHostException e) {
 		}
-        
+
 	}
 
 

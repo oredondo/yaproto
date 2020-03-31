@@ -29,22 +29,24 @@ import msti.util.RawSocketNetlink.NetlinkAddress;
 import static msti.util.RawSocketNetlink.PF_NETLINK;
 
 public class ProtocoloOSPFv2 implements Runnable {
-
+	String[] localIps;
 	AceptadorRawSocketNetlink aceptadorNetlinkCliente;
 	AceptadorRawSocketNetlink aceptadorNetlinkObservador;
-	AceptadorRawSocket aceptadorOSPFv2;
-	AceptadorRawSocket aceptadorOSPFv2_2;
 	TablaRutas tablaRutas;
-
+	AceptadorRawSocket[] aceptadoresOSPFV2;
+	ConfiguracionOSPFv2[] configuracionesOSPFv2;
+	FactoriaFSMMaquinaEstadosOSPFv2Interfaz[] factoriaFSMMaquinaEstadosOSPFv2Interfazes;
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
-	public ProtocoloOSPFv2() throws IOException {
+	public ProtocoloOSPFv2(String[] localIps1) throws IOException {
+		localIps = localIps1;
+		AceptadorRawSocket aceptadorOSPFv2;
 		FiltroCodec filtroCodec;
 		FiltroLog filtroLog;
 		FiltroNotificador filtroNotificador;
-
+		aceptadoresOSPFV2 = new AceptadorRawSocket[localIps.length];
 		// Instancia una tabla de rutas
 		TablaRutas tablaRutas = new TablaRutas();
 
@@ -133,103 +135,68 @@ public class ProtocoloOSPFv2 implements Runnable {
 
 
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		// Construye un canal rawSocket, con formato de pdu OSPF.
 		// Aceptador modo RawSocket
 
-		aceptadorOSPFv2 = new AceptadorRawSocket(); // Genera un lector y un escritor
-		//aceptadorOSPFv2.crear(RawSocket.AF_PACKET, RawSocket.IPPROTO_RAW);
-		//aceptadorOSPFv2.crear(RawSocket.PF_INET, 255);
-		aceptadorOSPFv2.crear(RawSocket.PF_INET, 89);
-		//aceptadorNetlinkCliente.crear(PF_NETLINK, IMensajeNetlink.NetlinkProtocol.NETLINK_ROUTE.getValue());
+		for (int x=0; x < localIps.length; x++) {
+			aceptadorOSPFv2 = new AceptadorRawSocket(); // Genera un lector y un escritor
+			//aceptadorOSPFv2.crear(RawSocket.AF_PACKET, RawSocket.IPPROTO_RAW);
+			//aceptadorOSPFv2.crear(RawSocket.PF_INET, 255);
+			aceptadorOSPFv2.crear(RawSocket.PF_INET, 89);
+			//aceptadorNetlinkCliente.crear(PF_NETLINK, IMensajeNetlink.NetlinkProtocol.NETLINK_ROUTE.getValue());
 
-		// Codec de pdu OSPF
-		filtroCodec = new FiltroCodec("Codec OSPFv2",
-									new IMensajeCodecFactoria() {
-										MensajeOSPFv2Codec ospfv2Codec = null;
+			// Codec de pdu OSPF
+			filtroCodec = new FiltroCodec("Codec OSPFv2",
+										new IMensajeCodecFactoria() {
+											MensajeOSPFv2Codec ospfv2Codec = null;
 
-										@Override
-										public IMensajeDecodificador getDecodificador() {
-											if (ospfv2Codec == null)
-												ospfv2Codec = new MensajeOSPFv2Codec();
-											return ospfv2Codec;
-										}
+											@Override
+											public IMensajeDecodificador getDecodificador() {
+												if (ospfv2Codec == null)
+													ospfv2Codec = new MensajeOSPFv2Codec();
+												return ospfv2Codec;
+											}
 
-										@Override
-										public IMensajeCodificador getCodificador() {
-											if (ospfv2Codec == null)
-												ospfv2Codec = new MensajeOSPFv2Codec();
-											return ospfv2Codec;
-										}
-		});
-		aceptadorOSPFv2.getCadenaFiltros().addFirst(filtroCodec.getNombre(), filtroCodec);
-		// Log de mensajes recibidos (ya decodificados)
-		filtroLog = new FiltroLog("Log_1");
-		filtroLog.setNivelLogMinimo(NivelLog.TRACE);
-		aceptadorOSPFv2.getCadenaFiltros().addLast(filtroLog.getNombre(), filtroLog);
+											@Override
+											public IMensajeCodificador getCodificador() {
+												if (ospfv2Codec == null)
+													ospfv2Codec = new MensajeOSPFv2Codec();
+												return ospfv2Codec;
+											}
+			});
+			aceptadorOSPFv2.getCadenaFiltros().addFirst(filtroCodec.getNombre(), filtroCodec);
+			// Log de mensajes recibidos (ya decodificados)
+			filtroLog = new FiltroLog("Log_" + x);
+			filtroLog.setNivelLogMinimo(NivelLog.TRACE);
+			aceptadorOSPFv2.getCadenaFiltros().addLast(filtroLog.getNombre(), filtroLog);
 
-		// Patron observable para el canal
-		filtroNotificador = new FiltroNotificador("Notificador_1");
-		aceptadorOSPFv2.getCadenaFiltros().addLast(filtroNotificador.getNombre(), filtroNotificador);
+			// Patron observable para el canal
+			filtroNotificador = new FiltroNotificador("Notificador_" + x);
+			aceptadorOSPFv2.getCadenaFiltros().addLast(filtroNotificador.getNombre(), filtroNotificador);
 
-		// Suscribe la m�quina de estados a los eventos del canal  de mensajes
-		ConfiguracionOSPFv2 confOSPFv2= ConfiguracionOSPFv2.getInstance();
-		confOSPFv2.allSPFRouters = InetAddress.getByName("224.0.0.5");
-		confOSPFv2.allDRouters = InetAddress.getByName("224.0.0.6");
-		confOSPFv2.routerID = Inet4Address.toInt(InetAddress.getByName("172.24.2.1"));
-		confOSPFv2.tablaRutas = tablaRutas;
+			// Suscribe la m�quina de estados a los eventos del canal  de mensajes
+			ConfiguracionOSPFv2 confOSPFv2= ConfiguracionOSPFv2.getInstance();
+			confOSPFv2.allSPFRouters = InetAddress.getByName("224.0.0.5");
+			confOSPFv2.allDRouters = InetAddress.getByName("224.0.0.6");
+			confOSPFv2.routerID = Inet4Address.toInt(InetAddress.getByName(localIps[x]));
+			confOSPFv2.tablaRutas = tablaRutas;
 
-		FactoriaFSMMaquinaEstadosOSPFv2Interfaz factoriaOSPFv2Interfaz = new FactoriaFSMMaquinaEstadosOSPFv2Interfaz(tablaRutas, meNetlinkCliente, confOSPFv2);
-		//suscribe para sesi�n creada
-		filtroNotificador.addSesionCreadaListener(factoriaOSPFv2Interfaz);
+			FactoriaFSMMaquinaEstadosOSPFv2Interfaz factoriaOSPFv2Interfaz = new FactoriaFSMMaquinaEstadosOSPFv2Interfaz(tablaRutas, meNetlinkCliente, confOSPFv2);
+			//suscribe para sesi�n creada
+			filtroNotificador.addSesionCreadaListener(factoriaOSPFv2Interfaz);
 
-
-		//segundo aceptadorOSPFv2, (2� interfaz)
-		aceptadorOSPFv2_2 = new AceptadorRawSocket();
-		aceptadorOSPFv2_2.crear(RawSocket.PF_INET, 89);
-		filtroCodec = new FiltroCodec("Codec OSPFv2",
-				new IMensajeCodecFactoria() {
-					MensajeOSPFv2Codec ospfv2Codec = null;
-
-					@Override
-					public IMensajeDecodificador getDecodificador() {
-						if (ospfv2Codec == null)
-							ospfv2Codec = new MensajeOSPFv2Codec();
-						return ospfv2Codec;
-					}
-
-					@Override
-					public IMensajeCodificador getCodificador() {
-						if (ospfv2Codec == null)
-							ospfv2Codec = new MensajeOSPFv2Codec();
-						return ospfv2Codec;
-					}
-		});
-		aceptadorOSPFv2_2.getCadenaFiltros().addFirst(filtroCodec.getNombre(), filtroCodec);
-		filtroLog = new FiltroLog("Log_2");
-		filtroLog.setNivelLogMinimo(NivelLog.TRACE);
-		aceptadorOSPFv2_2.getCadenaFiltros().addLast(filtroLog.getNombre(), filtroLog);
-		filtroNotificador = new FiltroNotificador("Notificador_2");
-		aceptadorOSPFv2_2.getCadenaFiltros().addLast(filtroNotificador.getNombre(), filtroNotificador);
-
-		// Suscribe la m�quina de estados a los eventos del canal  de mensajes
-		ConfiguracionOSPFv2 confOSPFv2_2= ConfiguracionOSPFv2.getInstance();
-		confOSPFv2_2.allSPFRouters = InetAddress.getByName("224.0.0.5");
-		confOSPFv2_2.allDRouters = InetAddress.getByName("224.0.0.6");
-		confOSPFv2_2.routerID = Inet4Address.toInt(InetAddress.getByName("172.24.3.2"));
-		confOSPFv2_2.tablaRutas = tablaRutas;
-
-		FactoriaFSMMaquinaEstadosOSPFv2Interfaz factoriaOSPFv2Interfaz_2 = new FactoriaFSMMaquinaEstadosOSPFv2Interfaz(tablaRutas, meNetlinkCliente, confOSPFv2_2);
-		//suscribe para sesi�n creada
-		filtroNotificador.addSesionCreadaListener(factoriaOSPFv2Interfaz_2);
+			aceptadoresOSPFV2[x] = aceptadorOSPFv2;
+			
+		}
 
 	}
 
 	public void run() {
 		// Establece un manejador para apagados abruptos
 		AceptadorShutdown aceptadorShutdown = AceptadorShutdown.crear();
-		aceptadorShutdown.setAceptador(this.aceptadorOSPFv2);
+		aceptadorShutdown.setAceptador(aceptadoresOSPFV2[0]);
 		Runtime.getRuntime().addShutdownHook(aceptadorShutdown);
 
 
@@ -259,44 +226,20 @@ public class ProtocoloOSPFv2 implements Runnable {
 			Thread hiloNetlinkObservador = new Thread(aceptadorNetlinkObservador);
 			hiloNetlinkObservador.start();
 
-
+			for (int x=0; x < localIps.length; x++) {
 			/** Bind del canal OSPF */
-			InetAddress inetA = InetAddress.getByName("172.24.2.1");
-			System.out.println("Bind del canal OSPF iniciado, interfaz "+ inetA.getHostAddress());
-			//Para a�adir m�s interfaces, hacer otro aceptadorOSPFv2 y otro bind, todo igual que este menos el bind (con la nueva ip)
-			aceptadorOSPFv2.bind(InetAddress.getByName("172.24.2.1"));
-			///AllSPFRouters
-			((AceptadorRawSocket)aceptadorOSPFv2).unirGrupo(InetAddress.getByName("224.0.0.5"));
-			///AlldRouters
-			((AceptadorRawSocket)aceptadorOSPFv2).unirGrupo(InetAddress.getByName("224.0.0.6"));
-			// Pone en marcha ospf (usa para ello el hilo actual)
-			System.out.println("Bind del canal OSPF terminado unido a  " + aceptadorOSPFv2.getGrupos().size() + " grupos");
-			aceptadorOSPFv2.start();
-
-
-			//segundo aceptador (segunda interfaz)
-			InetAddress inetA_2 = InetAddress.getByName("172.24.3.2");
-			System.out.println("Bind del canal OSPF iniciado, interfaz "+ inetA_2.getHostAddress());
-			aceptadorOSPFv2_2.bind(InetAddress.getByName("172.24.3.2"));
-			///AllSPFRouters
-			((AceptadorRawSocket)aceptadorOSPFv2_2).unirGrupo(InetAddress.getByName("224.0.0.5"));
-			///AlldRouters
-			((AceptadorRawSocket)aceptadorOSPFv2_2).unirGrupo(InetAddress.getByName("224.0.0.6"));
-			// Pone en marcha ospf (usa para ello el hilo actual)
-			System.out.println("Bind del canal OSPF terminado unido a  " + aceptadorOSPFv2_2.getGrupos().size() + " grupos");
-			aceptadorOSPFv2_2.start();
-
-			// //tercer aceptador (segunda interfaz)
-			// InetAddress inetA_3 = InetAddress.getByName("192.168.100.2");
-			// System.out.println("Bind del canal OSPF iniciado, interfaz "+ inetA_3.getHostAddress());
-			// aceptadorOSPFv2_3.bind(InetAddress.getByName("192.168.100.2"));
-			// ///AllSPFRouters
-			// ((AceptadorRawSocket)aceptadorOSPFv2_2).unirGrupo(InetAddress.getByName("224.0.0.5"));
-			// ///AlldRouters
-			// ((AceptadorRawSocket)aceptadorOSPFv2_2).unirGrupo(InetAddress.getByName("224.0.0.6"));
-			// // Pone en marcha ospf (usa para ello el hilo actual)
-			// System.out.println("Bind del canal OSPF terminado unido a  " + aceptadorOSPFv2_3.getGrupos().size() + " grupos");
-			// aceptadorOSPFv2_3.start();
+					InetAddress inetA = InetAddress.getByName(localIps[x]);
+					System.out.println("Bind del canal OSPF iniciado, interfaz "+ inetA.getHostAddress());
+					//Para a�adir m�s interfaces, hacer otro aceptadorOSPFv2 y otro bind, todo igual que este menos el bind (con la nueva ip)
+					aceptadoresOSPFV2[x].bind(InetAddress.getByName(localIps[x]));
+					///AllSPFRouters
+					((AceptadorRawSocket)aceptadoresOSPFV2[x]).unirGrupo(InetAddress.getByName("224.0.0.5"));
+					///AlldRouters
+					((AceptadorRawSocket)aceptadoresOSPFV2[x]).unirGrupo(InetAddress.getByName("224.0.0.6"));
+					// Pone en marcha ospf (usa para ello el hilo actual)
+					System.out.println("Bind del canal OSPF terminado unido a  " + aceptadoresOSPFV2[x].getGrupos().size() + " grupos");
+					aceptadoresOSPFV2[x].start();
+		  }
 
 
 		} catch (SocketException e) {
@@ -314,10 +257,13 @@ public class ProtocoloOSPFv2 implements Runnable {
 	}
 
 	public static void main(String[] args) {
-
+		// 172.24.1.2,172.24.3.2
 		ProtocoloOSPFv2 ospfv2;
 		try {
-			ospfv2 = new ProtocoloOSPFv2();
+
+			String[] localIps = args[0].split(",", 0);
+			String[] otrasIps = args[1].split(",", 0);
+			ospfv2 = new ProtocoloOSPFv2(localIps);
 			ospfv2.run();
 		} catch (IOException e) {
 			e.printStackTrace();
