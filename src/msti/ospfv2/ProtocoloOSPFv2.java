@@ -29,19 +29,21 @@ import msti.util.RawSocketNetlink.NetlinkAddress;
 import static msti.util.RawSocketNetlink.PF_NETLINK;
 
 public class ProtocoloOSPFv2 implements Runnable {
-	String[] localIps;
+	public static String[] localIps;
 	AceptadorRawSocketNetlink aceptadorNetlinkCliente;
 	AceptadorRawSocketNetlink aceptadorNetlinkObservador;
 	TablaRutas tablaRutas;
 	AceptadorRawSocket[] aceptadoresOSPFV2;
 	ConfiguracionOSPFv2[] configuracionesOSPFv2;
+	public static String[] othersIps;
 	FactoriaFSMMaquinaEstadosOSPFv2Interfaz[] factoriaFSMMaquinaEstadosOSPFv2Interfazes;
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
-	public ProtocoloOSPFv2(String[] localIps1) throws IOException {
+	public ProtocoloOSPFv2(String[] localIps1, String[] othersIps1) throws IOException {
 		localIps = localIps1;
+		othersIps = othersIps1;
 		AceptadorRawSocket aceptadorOSPFv2;
 		FiltroCodec filtroCodec;
 		FiltroLog filtroLog;
@@ -188,7 +190,7 @@ public class ProtocoloOSPFv2 implements Runnable {
 			filtroNotificador.addSesionCreadaListener(factoriaOSPFv2Interfaz);
 
 			aceptadoresOSPFV2[x] = aceptadorOSPFv2;
-			
+
 		}
 
 	}
@@ -263,7 +265,8 @@ public class ProtocoloOSPFv2 implements Runnable {
 
 			String[] localIps = args[0].split(",", 0);
 			String[] otrasIps = args[1].split(",", 0);
-			ospfv2 = new ProtocoloOSPFv2(localIps);
+
+			ospfv2 = new ProtocoloOSPFv2(localIps, otrasIps);
 			ospfv2.run();
 		} catch (IOException e) {
 			e.printStackTrace();

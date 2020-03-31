@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import com.savarese.rocksaw.net.RawSocket;
 
 import msti.ospfv2.ConfiguracionOSPFv2;
+import msti.ospfv2.ProtocoloOSPFv2;
 import msti.util.RawSocketNetlink;
 import msti.util.RawSocketNetlink.NetlinkAddress;
 
@@ -85,23 +86,18 @@ public class SesionRawSocket extends Sesion {
 			if(dirDestino.equals(ConfiguracionOSPFv2.getInstance().allSPFRouters)){
 				//Enviar mensaje a todos los routers
 				//Escenario1. R1, R2 Y R3
-
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.1.2"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura);
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.1.253"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura);
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.3.253"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura);
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.3.2"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura);
+				for (int x=0; x < ProtocoloOSPFv2.othersIps.length; x++) {
+					escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName(ProtocoloOSPFv2.othersIps[x]), 0));
+					this.getEscritor().escribirAsincrono(this, escritura);
+				}
 
 
 			}else if(dirDestino.equals(ConfiguracionOSPFv2.getInstance().allDRouters)){
-				//Enviar mensaje a todos los DR
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.1.253"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura);
-				escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName("172.24.3.253"), 0));
-				this.getEscritor().escribirAsincrono(this, escritura);
+				//Enviar mensaje a todos los DR aqui las que no son suyas
+				for (int x=0; x < ProtocoloOSPFv2.localIps.length; x++) {
+					escritura.setDireccionDestino(new InetSocketAddress(InetAddress.getByName(ProtocoloOSPFv2.localIps[x]), 0));
+					this.getEscritor().escribirAsincrono(this, escritura);
+				}
 
 			}else{
 				//Enviar mensaje únicamente al destinatario
