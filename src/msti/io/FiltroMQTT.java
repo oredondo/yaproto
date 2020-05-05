@@ -38,32 +38,21 @@ public class FiltroMQTT extends Filtro {
 	/* Nivel m�nimo de log. Por debajo, no se imprime, ni llegan a construirse los mensajes de log */
 	private NivelLogMQTT nivelLogMinimo;
 
-	public FiltroMQTT(String nombre, String host) {
+	public FiltroMQTT(String nombre, MqttClient mqtt) {
 		super(nombre);
-
+		logger = mqtt;
 		// Instancia un logger para este filtro
-			try {
-						MemoryPersistence persistence = new MemoryPersistence();
-						String url;
-						url = "tcp://" + host;
-						logger = new MqttClient(url, nombre, persistence);
-						MqttConnectOptions connOpts = new MqttConnectOptions();
-						connOpts.setCleanSession(true);
-						logger.connect(connOpts);
-					} catch (MqttException e) {
-							e.printStackTrace();
-				}
         // Niveles por defecto
-        nivelMensajeRecibido = NivelLogMQTT.INFO;
-        nivelExcepcionCapturadaLectura = NivelLogMQTT.WARN;
-        nivelSesionCreada = NivelLogMQTT.INFO;
-        nivelSesionInactiva = NivelLogMQTT.INFO;
-        nivelSesionCerrada = NivelLogMQTT.INFO;
-        nivelEscribir = NivelLogMQTT.INFO;
-        nivelExcepcionCapturadaEscritura = NivelLogMQTT.WARN;
+    nivelMensajeRecibido = NivelLogMQTT.INFO;
+    nivelExcepcionCapturadaLectura = NivelLogMQTT.WARN;
+    nivelSesionCreada = NivelLogMQTT.INFO;
+    nivelSesionInactiva = NivelLogMQTT.INFO;
+    nivelSesionCerrada = NivelLogMQTT.INFO;
+    nivelEscribir = NivelLogMQTT.INFO;
+    nivelExcepcionCapturadaEscritura = NivelLogMQTT.WARN;
 
-        // Nivel m�nimo de log
-        nivelLogMinimo = NivelLogMQTT.INFO;
+    // Nivel m�nimo de log
+    nivelLogMinimo = NivelLogMQTT.INFO;
 	}
 
 	@Override

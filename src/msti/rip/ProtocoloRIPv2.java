@@ -17,6 +17,7 @@ import msti.io.AceptadorDatagrama;
 import msti.io.AceptadorDatagramaMulticast;
 import msti.io.AceptadorRawSocketNetlink;
 import msti.io.Filtro;
+import msti.io.MqttCliente;
 import msti.io.FiltroCodec;
 import msti.io.FiltroLog;
 import msti.io.FiltroMQTT;
@@ -33,6 +34,7 @@ import msti.rip.fsm.FactoriaFSMMaquinaEstadosRIP;
 import msti.rip.mensaje.MensajeRIPCodec;
 import msti.util.RawSocketNetlink;
 import msti.util.RawSocketNetlink.NetlinkAddress;
+import org.eclipse.paho.client.mqttv3.MqttClient;
 
 //////////////////////////////////
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -71,7 +73,10 @@ public class ProtocoloRIPv2 implements Runnable {
 		aceptadorNetlinkCliente = new AceptadorRawSocketNetlink();
 
 		aceptadorNetlinkCliente.crear(PF_NETLINK, IMensajeNetlink.NetlinkProtocol.NETLINK_ROUTE.getValue());
-
+		MqttCliente mqtt;
+		mqtt = new MqttCliente(port);
+		MqttClient clientemqtt;
+		clientemqtt = mqtt.getMqtt();
 
 		// Codec de pdu RIP. TODO: Estos filtros se instancia uno, o varios por cada sesi�n?????
 		filtroCodec = new FiltroCodec("Codec Netlink",
@@ -96,12 +101,12 @@ public class ProtocoloRIPv2 implements Runnable {
 		// Log de mensajes recibidos
 		filtroLog = new FiltroLog("Log");
 		filtroLog.setNivelLogMinimo(NivelLog.TRACE);
-		filtroMqtt = new FiltroMQTT("LogRip", port);
+		filtroMqtt = new FiltroMQTT("LogRip", clientemqtt);
 		filtroMqtt.setNivelLogMinimo(NivelLogMQTT.TRACE);
 		aceptadorNetlinkCliente.getCadenaFiltros().addLast(filtroLog.getNombre(), filtroLog);
 		aceptadorNetlinkCliente.getCadenaFiltros().addLast(filtroMqtt.getNombre(), filtroMqtt);
 		// Patrón observable para el canal
-		filtroNotificador = new FiltroNotificador("Notificador");
+		filtroNotificador = new FiltroNotificador("Notificador", clientemqtt);
 		aceptadorNetlinkCliente.getCadenaFiltros().addLast(filtroNotificador.getNombre(), filtroNotificador);
 
 		// Instancia una máq. estados dedicada para enviar mandatos a la tabla forwarding
@@ -146,7 +151,7 @@ public class ProtocoloRIPv2 implements Runnable {
 		aceptadorNetlinkObservador.getCadenaFiltros().addLast(filtroMqtt.getNombre(), filtroMqtt);
 
 		// Patr�n observable para el canal (permite observadores ISesionCreadaListener, ILecturaListener, IEscrituraListener)
-		filtroNotificador = new FiltroNotificador("Notificador");
+		filtroNotificador = new FiltroNotificador("Notificador", clientemqtt);
 		aceptadorNetlinkObservador.getCadenaFiltros().addLast(filtroNotificador.getNombre(), filtroNotificador);
 
 		// Suscribe la m�quina de estados a los eventos del canal udp de mensajes
@@ -201,7 +206,7 @@ public class ProtocoloRIPv2 implements Runnable {
 		aceptadorRIP.getCadenaFiltros().addLast(filtroMqtt.getNombre(), filtroMqtt);
 
 		// Patr�n observable para el canal
-		filtroNotificador = new FiltroNotificador("Notificador");
+		filtroNotificador = new FiltroNotificador("Notificador", clientemqtt);
 		aceptadorRIP.getCadenaFiltros().addLast(filtroNotificador.getNombre(), filtroNotificador);
 
 		// Suscribe la m�quina de estados a los eventos del canal udp de mensajes
