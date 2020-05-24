@@ -14,31 +14,38 @@ import msti.fsm.FSMEstado.FSMIdEstado;
 import msti.fsm.FSMEstado.FSMIdEstadoBase;
 import msti.fsm.FSMEvento.FSMIdEvento;
 import msti.fsm.FSMEvento.FSMIdEventoBase;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 
 
 	/* Atributos TODO: pasar a Context y así que pueda ser singleton? */
-	
+
 	/* Mapa de transiciones. Permite obtener, a partir de un estado, e
-	public static final 
+	public static final
 
 	/** Estado actual */    //TODO: Pasar a contexto y esta clase podrá ser singleton y tener un getInstance()
 	private FSMEstado estado;
 
-	/** 
+	/**
 	 * Cola de eventos a procesar en esta máquina
 	 */
 	private final BlockingQueue<FSMEvento> colaEventos;
 
 	/** Contexto que comparten los estados */
 	private final FSMContexto contexto;   // TODO: Evaluar si sacar todo de la máquina hacia el contexto, y hacer la máquina de estados singleton
-	
+
 	/** Indica si esta máquina se ejecuta en hilo aparte o no */
 	private boolean esHilo = false;
-	
+
 	/** Mapa de transiciones */
-	private Map<String, FSMIdEstado> mapaTransiciones; 
+	private Map<String, FSMIdEstado> mapaTransiciones;
+
+	private MqttClient client;
 
 	/**
 	 * Instancia una máquina de estados. En los objetos del contexto deberían pasarse los
@@ -50,22 +57,24 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 	public FSMMaquinaEstados(FSMContexto contexto)
 	{
 		// Almacena contexto
+		//Agregar al contexto con casting
 		this.contexto = contexto;
 		contexto.setMaquinaEstados(this);  // this no está construido aún (finalizado constructor), cuidado con lo que se hacen en set que referencie esta máquina
 											// TODO: pasar a objeto interno del contexto como el resto ¿?
 		// Crea una cola bloqueante
 		this.colaEventos = new LinkedBlockingQueue<FSMEvento>();
-		
+		client = (MqttClient)contexto.getMqttClient();
+
 		// Establece un estado inicial (debería hacerse en init())
 		estado = FSMIdEstadoBase.INICIO.getInstance();
-		
+
 		// Crea mapa de transiciones
 		mapaTransiciones = new HashMap<String, FSMIdEstado>();
 
 		// Configura mapa de transiciones
 		configurarTransiciones();
 	}
-	
+
 	/**
 	 * Inicializa la máquina de estados (hace la primera transición desde estado INICIO al primer
 	 * estado configurado
@@ -74,10 +83,10 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 		// Obtiene el inicio
 		setEstado(FSMIdEstadoBase.INICIO.getInstance());
 		// Realiza la primera transición desde INICIO
-		setEstado(((FSMEstadoInicio) getEstadoActivo()).procesarEventoInicio(contexto));		
+		setEstado(((FSMEstadoInicio) getEstadoActivo()).procesarEventoInicio(contexto));
 	}
 
-	/** 
+	/**
 	 * Construye la clave de la tabla de transiciones:
 	 * idEstado,idEvento,idGuarda -> idEstado destino
 
@@ -92,7 +101,7 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 		sb.append(idEstado.toString());
 		sb.append(idEvento != null ? idEvento.toString() : idEvento);
 		sb.append(idGuarda != null ? idGuarda : idGuarda);
-		return sb.toString();		
+		return sb.toString();
 	}
 	public void anadirTransicion(FSMIdEstado idEstadoOrigen, FSMIdEvento idEvento, String idGuarda, FSMIdEstado idEstadoDestino) {
 		mapaTransiciones.put( generarClaveMapaTransiciones(idEstadoOrigen, idEvento, idGuarda), idEstadoDestino);
@@ -112,18 +121,18 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 	public FSMContexto getContexto() {
 		return contexto;
 	}
-	
+
 	protected BlockingQueue<FSMEvento> getColaEventos() {
 		return colaEventos;
 	}
 
 	/**
 	 * Factoría para algunos singleton especiales, de forma que los objetos no requieran conocer los nombres de clase
-	 * 
+	 *
 	 * @param Tipo de estado(sólo válidos INICIO, FIN)
 	 */
 	protected FSMEstado getEstadoPorId(FSMIdEstado idEstado) {
-		FSMIdEstadoBase _idEstado = (FSMIdEstadoBase)idEstado; 
+		FSMIdEstadoBase _idEstado = (FSMIdEstadoBase)idEstado;
 
 		switch (_idEstado) {
 		case INICIO:
@@ -135,7 +144,7 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 		}
 	}
 
-	
+
 	/**
 	 * Establece el estado actual de la máquina.  Si no se usa, establece un estado de tipo Inicial
 	 * Útil si la máquina no comienza en el estado inicial por algún motivo: máquinas que instancien otras
@@ -143,7 +152,18 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 	 * @param estado
 	 */
 	public void setEstado(FSMEstado estado) {
+		try{
+				if (client != null){
+					MqttMessage message;
+					message = new MqttMessage(("ESTADO: " + estado.getNombre()).getBytes());
+					client.publish("ESTADO", message);
+				}
+		} catch (MqttException e) {
+				e.printStackTrace();
+		}
 		this.estado = estado;
+
+		//Publicar estado
 	}
 
 	/**
@@ -171,21 +191,22 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 	public FSMEstado getEstadoSiguiente(FSMEstado estado, FSMEvento evento, String guarda) {
 		// TODO Utiliza el mapa de transiciones para seleccionar el siguiente estado
 		// Obtiene estado siguiente, a partir de estado actual, evento (y si existe guarda), evento#guarda, para obtener el siguiente
-		
+
 		 // Temporal: único estado. Debería haber una factoría de singleton
-		FSMIdEstado idEstado = (FSMIdEstado) mapaTransiciones.get( 
+		FSMIdEstado idEstado = (FSMIdEstado) mapaTransiciones.get(
 				generarClaveMapaTransiciones(estado.getId(), evento != null ? evento.getIdEvento() : null, guarda));
 		// Si existe devuelve instancia de estado
-		if (idEstado != null) // existe
+		if (idEstado != null) {// existe
 			return idEstado.getInstance();
+		}
 		else
 			return null;
-	}		
+	}
 
 	public FSMEstado getEstadoActivo() {
 		return estado;
 	}
-	
+
 	public void setHilo(boolean esHilo) {
 		this.esHilo = esHilo;
 	}
@@ -194,16 +215,16 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 		return esHilo;
 	}
 
-	/** 
+	/**
 	 * Realiza una transición en la máquina de estados. Es decir:
 	 *    - Recoge un evento de la cola de evento
 	 *    - Pasa el evento al estado actual (que realiza, en su caso teniendo en cuenta la condición de guarda, las acciones establecidas)
 	 *    - Pasa a un nuevo estado.
-	 *    
+	 *
 	 * Este método puede ser bloqueante si la cola de eventos estuviese vacía, en espera de un evento.
 	 */
 	public void doTransicion() {
-		try { 
+		try {
 			// 1. Recoge(espera, si no existe) un evento
 			FSMEvento evento = (FSMEvento)colaEventos.take();
 
@@ -217,7 +238,7 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Cuando la máquina se ejecuta como un hilo, este es su programa principal
 	 * Un bucle ejecutando transiciones, hasta llegar al estado final (idEstado == FIN)
@@ -235,5 +256,5 @@ public class FSMMaquinaEstados implements IFSMMaquinaEstados, Runnable {
 			doTransicion();
 		}
 	}
-			
+
 }

@@ -30,14 +30,14 @@ public class FSMAccionEnviarPeticionModificarRuta implements FSMAccion {
 
 	public static MensajeNetlinkRoute generarPeticionModificarRuta(Ruta ruta) {
 		MensajeNetlinkRoute.Builder mensaje = MensajeNetlinkRoute.Builder.crear();
-		
+
 		// Construye un mensaje Netlink para modificación de ruta
 		mensaje.setMessageType(NetlinkMessageType.RTM_NEWROUTE);
 		//TODO: rellenar mensaje!!
 		return mensaje.build();
 
 	}
-	
+
 	@Override
 	public void execute(FSMContexto contexto, Object o) {
 		SesionRawSocketNetlink sesion = (SesionRawSocketNetlink) contexto.get("SesionNetlinkCliente");
@@ -48,11 +48,11 @@ public class FSMAccionEnviarPeticionModificarRuta implements FSMAccion {
 			throw new IllegalArgumentException("Objeto con clave 'SesionNetlinkCliente' no existente en el contexto.");
 
 		// Construye mensaje
-////TODO:		mensaje = generarPeticionModificarRuta(ruta);
-		
+   	mensaje = generarPeticionModificarRuta(ruta);
+
 		// Lo envía a través de la sesión
-////	Escritura escritura = new Escritura(mensaje);		
-//// TODO: sesion.escribir(escritura);
+  	Escritura escritura = new Escritura(mensaje);
+    sesion.escribir(escritura);
 	}
 
 }
