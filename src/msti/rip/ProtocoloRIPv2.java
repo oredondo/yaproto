@@ -111,6 +111,7 @@ public class ProtocoloRIPv2 implements Runnable {
 
 		// Instancia una máq. estados dedicada para enviar mandatos a la tabla forwarding
 		FSMContexto contexto = new FSMContexto();
+		contexto.setMqttClient(clientemqtt);
 		FSMMaquinaEstadosNetlinkCliente meNetlinkCliente = new FSMMaquinaEstadosNetlinkCliente(contexto);
 		meNetlinkCliente.setHilo(false);
 		meNetlinkCliente.init(contexto);
@@ -200,8 +201,6 @@ public class ProtocoloRIPv2 implements Runnable {
 		// Log de mensajes recibidos (ya decodificados)
 		filtroLog = new FiltroLog("Log");
 		filtroLog.setNivelLogMinimo(NivelLog.TRACE);
-		// filtroMqtt = new FiltroMQTT("LogRip", port);
-		// filtroMqtt.setNivelLogMinimo(NivelLogMQTT.TRACE);
 		aceptadorRIP.getCadenaFiltros().addLast(filtroLog.getNombre(), filtroLog);
 		aceptadorRIP.getCadenaFiltros().addLast(filtroMqtt.getNombre(), filtroMqtt);
 
@@ -214,7 +213,9 @@ public class ProtocoloRIPv2 implements Runnable {
 		// notificador
 
 		// TODO: Esto debe estar en un método de alguna clase SesionCreadaListener
-		FactoriaFSMMaquinaEstadosRIP factoriaMeRIP = new FactoriaFSMMaquinaEstadosRIP(tablaRutas, meNetlinkCliente);
+		FSMContexto contexto2 = new FSMContexto();
+		contexto2.setMqttClient(clientemqtt);
+		FactoriaFSMMaquinaEstadosRIP factoriaMeRIP = new FactoriaFSMMaquinaEstadosRIP(tablaRutas, meNetlinkCliente, contexto);
 		filtroNotificador.addSesionCreadaListener(factoriaMeRIP); //suscribe para sesión creada (debería instanciar la máquina aquí
 
 		// Instancia un filtro para crear máquinas por ruta y pasar los eventos
@@ -284,22 +285,6 @@ public class ProtocoloRIPv2 implements Runnable {
 
 			ProtocoloRIPv2 rip;
 			String port = args[0];
-			// try {
-			// 		MqttClient logger;
-			// 		MemoryPersistence persistence = new MemoryPersistence();
-			// 		String url;
-			// 		url = "tcp://" + port;
-			// 		System.out.println("@@@@@@@@@@@@@@@@@@@@@@"+url);
-			// 		logger = new MqttClient(url, "test", persistence);
-			// 		MqttConnectOptions connOpts = new MqttConnectOptions();
-			// 		connOpts.setCleanSession(true);
-			// 		logger.connect(connOpts);
-			// 		MqttMessage message = new MqttMessage("esto es lo que estoy enviando".getBytes());
-			// 		logger.publish("prueba", message);
-			//
-			// 	} catch (MqttException e) {
-			// 		e.printStackTrace();
-			// 	}
 		try {
 			rip = new ProtocoloRIPv2(port);
 			rip.run();

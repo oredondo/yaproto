@@ -15,9 +15,7 @@ public class MqttCliente {
 
 	private MqttClient mqtt;
 
-
 	public MqttCliente(String host) {
-		// Instancia un logger para este filtro
 			try {
 						MemoryPersistence persistence = new MemoryPersistence();
 						String url;
